@@ -10,13 +10,17 @@
             "includePath": [
                 "C:/Users/Lou/Documents/Mbot/Mdog/include",
                 "C:/Users/Lou/Documents/Mbot/Mdog/src",
+                "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/RF24",
+                "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/RF24/utility",
+                "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/Adafruit PWM Servo Driver Library",
+                "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/Adafruit BusIO",
+                "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 "C:/Users/Lou/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/Lou/.platformio/packages/framework-arduino-avr/variants/mega",
                 "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                 "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -24,13 +28,17 @@
                 "path": [
                     "C:/Users/Lou/Documents/Mbot/Mdog/include",
                     "C:/Users/Lou/Documents/Mbot/Mdog/src",
+                    "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/RF24",
+                    "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/RF24/utility",
+                    "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/Adafruit PWM Servo Driver Library",
+                    "C:/Users/Lou/Documents/Mbot/Mdog/.pio/libdeps/megaatmega2560/Adafruit BusIO",
+                    "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     "C:/Users/Lou/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/Lou/.platformio/packages/framework-arduino-avr/variants/mega",
                     "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                     "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                    "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                    "C:/Users/Lou/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     ""
                 ]
             },
