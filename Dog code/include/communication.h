@@ -1,6 +1,7 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 #include <Wire.h>                    //https://www.arduino.cc/en/reference/wire
+#include <printf.h>
 
 String address_1 = "00001";
 RF24 radioNRF(7, 8);
@@ -12,6 +13,7 @@ void nrf24_init(uint8_t channel);
 
 void nrf24_init(uint8_t channel)
 {
+  printf_begin();
   radioNRF.begin();
   radioNRF.setChannel(channel);       // communication channel (0-125)
   radioNRF.setDataRate(RF24_250KBPS); // communication speed (RF24_250KBPS, RF24_1MBPS, RF24_2MBPS)

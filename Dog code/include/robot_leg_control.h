@@ -8,7 +8,7 @@ Adafruit_PWMServoDriver servo_uc2 = Adafruit_PWMServoDriver(0x41); // driver de 
 
 
 
-const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1484, 880, 1500, 670, 1425, 1494, 1440, 1535, 1474, 1634, 1354, 1485}; // correspond à la commande en micro seconde pour mettre le servo à 0°
+const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1484, 1500, 1500, 1500, 1425, 1494, 1440, 1535, 1474, 1634, 1354, 1485}; // correspond à la commande en micro seconde pour mettre le servo à 0°
 const int servo_max_ms[16] = {2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2000, 2000, 2000}; // valeur max en micro seconde accepté par le servo moteur
 const int servo_min_ms[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 1000, 1000, 1000}; // valeur min en micro seconde accepté par le servo moteur
 const int servo_min_angle[16] = {-90, -90, -90, -90, -90, -90, -90, -90, 90, 90, 90, 90, -90, -60, -60, -60}; // angle max des servos

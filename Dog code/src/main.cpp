@@ -46,17 +46,20 @@ void setup()
     servo_uc2.writeMicroseconds(i, servoNeutralPos[i]);
   }
 
-  Serial.begin(250000);
+  Serial.begin(57600);
   nrf24_init(115);
-}
+  delay(1000);
 
+}
+int speed;
+int command;
 void loop()
 {
-  Serial.println("here");
   // test_offset();
   //  test_h();
   //test_walk();
   radioNRF.startListening();
+  double t1 = millis();
   if (radioNRF.available())
   {
     // total = total + 1;
@@ -64,15 +67,19 @@ void loop()
     radioNRF.read(&receivedData, sizeof(receivedData));
     radioNRFData = receivedData;
     // Serial.println(radioNRFData);
-  }
-  Serial.println(radioNRFData);
+    //Serial.println(radioNRFData);
   int index_of_comma = radioNRFData.indexOf(',');
-  int command = radioNRFData.substring(0, index_of_comma).toInt();
-  int speed = radioNRFData.substring(index_of_comma + 1).toInt();
-  Serial.print(speed);
-  Serial.println(command);
+    command = radioNRFData.substring(0, index_of_comma).toInt();
+    speed = radioNRFData.substring(index_of_comma + 1).toInt();
+  //Serial.print(speed);
+  //Serial.println(command);
   
-  walk(speed, command);
+  }
+  walk( speed,command);
+  double t2 = millis();
+  double t = t2 - t1;
+  Serial.println(t);
+  
   // test_z();
   // test_z_all_legs();
   // test_y();
