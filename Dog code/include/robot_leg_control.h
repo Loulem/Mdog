@@ -8,20 +8,20 @@ Adafruit_PWMServoDriver servo_uc2 = Adafruit_PWMServoDriver(0x41); // driver de 
 
 
 
-const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1484, 1500, 1500, 1500, 1425, 1494, 1440, 1535, 1474, 1634, 1354, 1485}; // correspond à la commande en micro seconde pour mettre le servo à 0°
-const int servo_max_ms[16] = {2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2000, 2000, 2000}; // valeur max en micro seconde accepté par le servo moteur
-const int servo_min_ms[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 1000, 1000, 1000}; // valeur min en micro seconde accepté par le servo moteur
-const int servo_min_angle[16] = {-90, -90, -90, -90, -90, -90, -90, -90, 90, 90, 90, 90, -90, -60, -60, -60}; // angle max des servos
-const int servo_max_angle[16] = {90, 90, 90, 90, 90, 90, 90, 90, -90, -90, -90, -90, 90, 60, 60, 60}; // angle min des servos
-const int shoulderToFootZ[4] = {6, 6, 6, 6}; // correspondant à la distance suivant Z séparant l’épaule du pied
+const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1551, 1466, 1546, 1550, 1500, 1437, 1500, 1589, 1530, 1450, 1480, 1452}; // correspond à la commande en micro seconde pour mettre le servo à 0°
+const int servo_max_ms[16] = {2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500}; // valeur max en micro seconde accepté par le servo moteur
+const int servo_min_ms[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500}; // valeur min en micro seconde accepté par le servo moteur
+const int servo_min_angle[16] = {-90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90}; // angle max des servos
+const int servo_max_angle[16] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90}; // angle min des servos
+const int shoulderToFootZ[4] = {3.315, 3.315, 3.315, 3.315}; // correspondant à la distance suivant Z séparant l’épaule du pied
 
 
-double thighLength[4] = {10, 9.85, 10, 10};
-double shinLength[4] = {8.2, 8.377, 8.2, 8.2};
+double thighLength[4] = {11, 11, 11, 11};
+double shinLength[4] = {14, 14, 14, 14};
 byte sens_servo[4] = {0, 1, 0, 1}; // 0 sens trigo => ex 500ms = -90 et 2500ms = 90
 
-#define SERVO_X_DIST 17.248
-#define SERVO_Z_DIST 5.62
+#define SERVO_X_DIST 15.7
+#define SERVO_Z_DIST 8
 double leg_x_distance[4] = {SERVO_X_DIST, SERVO_X_DIST, -SERVO_X_DIST, -SERVO_X_DIST};
 double leg_z_distance[4] = {-SERVO_Z_DIST, SERVO_Z_DIST, -SERVO_Z_DIST, SERVO_Z_DIST};
 
@@ -35,7 +35,6 @@ int angle_to_ms(double angle, int servo_i)
 
 void set_servo_angle(double angle, int servo_i)
 { // commande au servo de se mettre à l’angle demandé dans le sens trigo et 0° correspond au milieu
-
   servo_uc1.writeMicroseconds(servo_i, angle_to_ms(angle, servo_i) + servoNeutralPos[servo_i]);
   servo_uc2.writeMicroseconds(servo_i, angle_to_ms(angle, servo_i) + servoNeutralPos[servo_i]);
 }
@@ -108,13 +107,13 @@ void setLegXYAll(double x, double y)
 
 void write_x_y_z(double x, double y, double z, int leg_i)
 {
-  Serial.print(x);
+  /*Serial.print(x);
   Serial.print(" ");
   Serial.print(y);
   Serial.print(" ");
   Serial.print(z);
   Serial.print(" ");
-  Serial.println(leg_i);
+  Serial.println(leg_i);*/
 
   double y1;
   double phi;

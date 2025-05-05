@@ -10,6 +10,42 @@ int axeX = A0;     // signal de l'axe X sur entrée A0
 int axeY = A1;     // signal de l'axe Y sur entrée A1
 int buttonPin = 10; // Bouton-poussoir en broche 7
 
+
+void test_sequence();
+void test_sequence();
+void test_setup();
+void test_servo_max();
+void put_all_leg_to_zero();
+void test_offset();
+void test_h();
+void test_angle();
+void test_y();
+void test_x();
+void test_x_all_legs();
+void test_x_y();
+void test_walk();
+void test_z();
+void test_z_all_legs();
+void test_angle_roll();
+
+
+void test_sequence(){
+  //test_offset();
+  //test_servo_max();
+  //test_h();
+  test_walk();
+  // test_z();
+  // test_z_all_legs();
+  // test_y();
+  // test_x();
+  // test_x_all_legs();
+  // put_all_leg_to_zero();
+  // test_x_y();
+  // test_angle_roll();
+  //test_angle();
+  
+}
+
 void test_setup(){
     pinMode(axeX, INPUT);             // définition de A0 comme une entrée
     pinMode(axeY, INPUT);             // définition de A1 comme une entrée
@@ -86,7 +122,7 @@ void test_h()
     i1 = (i1 + 1) % 4;
     delay(500);
   }
-  double X = (double)analogRead(axeX) / 100 + 4;
+  double X = (double)analogRead(axeX) / 100 + 14;
   Serial.print("On est sur le moteur");
   Serial.print(i1);
   Serial.print("       ");
