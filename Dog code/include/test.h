@@ -3,7 +3,7 @@
 //#include "robot_leg_control.h"
 
 int i1 = 0;
-int x = 0;
+float x = 0;
 byte sens = 0;
 
 int axeX = A0;     // signal de l'axe X sur entrée A0
@@ -27,6 +27,7 @@ void test_walk();
 void test_z();
 void test_z_all_legs();
 void test_angle_roll();
+void right_left();
 
 
 void test_sequence(){
@@ -34,8 +35,8 @@ void test_sequence(){
   //test_servo_max();
   //test_h();
   test_walk();
-  // test_z();
-  // test_z_all_legs();
+  //test_z();
+  //test_z_all_legs();
   // test_y();
   // test_x();
   // test_x_all_legs();
@@ -43,6 +44,7 @@ void test_sequence(){
   // test_x_y();
   // test_angle_roll();
   //test_angle();
+  //right_left();
   
 }
 
@@ -231,25 +233,25 @@ void test_z()
     i1 = (i1 + 1) % 4;
     delay(500);
   }
-  double X = (double)analogRead(axeX) / 200 - 2.5;
+  double X = (double)analogRead(axeX) / 100 - 2.5;
   // Serial.print("On est sur le moteur");
   // Serial.print(i1);
   // Serial.print("       ");
   // Serial.print("z est égale à ");
   // Serial.println(X);
-  write_x_y_z(0, 10, X, i1);
+  setLegXYZ(0, 20, X, i1);
   delay(25);
 }
 
 void test_z_all_legs()
 {
-  double X = (double)analogRead(axeX) / 200 - 2.5;
+  double X = (double)analogRead(axeX) / 100 - 2.5;
   // Serial.print("On est sur le moteur");
   // Serial.print(i1);
   // Serial.print("       ");
   // Serial.print("z est égale à ");
   // Serial.println(X);
-  setLegXYZAll(0, 12, X);
+  setLegXYZAll(0, 18, X);
   delay(25);
 }
 
@@ -263,5 +265,27 @@ void test_angle_roll()
   // Serial.println(X);
 
   all_leg_go_to_x_y_z_with_rotation(SERVO_X_DIST, -13, SERVO_Z_DIST, X * PI / 180.0, 0, 0);
+  delay(25);
+}
+
+void right_left()
+{
+  if (sens)
+  {
+    x = (x + 0.1);
+    if (x >= 5)
+    {
+      sens = !sens;
+    }
+  }
+  else
+  {
+    x = (x - 0.1);
+    if (x <= -5)
+    {
+      sens = !sens;
+    }
+  }
+  setLegXYZAll(0, 18, x);
   delay(25);
 }

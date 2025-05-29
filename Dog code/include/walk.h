@@ -1,9 +1,9 @@
 #define NB_ANGLE 100
 
 // int angle[40]{354, 348, 342, 336, 330, 324, 318, 312, 306, 300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240, 234, 228, 222, 216, 210, 204, 198, 192, 186, 180, 162, 144, 126, 108, 90, 72, 54, 36, 18, 0};
-double x_pos[NB_ANGLE];
+double crawling_x_pos[NB_ANGLE];
 double y_pos[NB_ANGLE];
-float offset_y = 23;
+float offset_y = 26;
 float walk_radius = 6;
 byte n_walk = 0;
 long unsigned int delay_walk = 1;
@@ -38,12 +38,12 @@ void setup_walk_path()
   int quart = NB_ANGLE / 4;
   for (int i = 3 * quart; i < NB_ANGLE; i++)
   {
-    x_pos[i] = cos((float)angle[i] * 2 * PI / 360.0) * 4;
+    crawling_x_pos[i] = cos((float)angle[i] * 2 * PI / 360.0) * 4;
     y_pos[i] = offset_y - sin((float)angle[i] * 2 * PI / 360.0) * walk_radius;
   }
   for (int i = 0; i < 3 * quart; i++)
   {
-    x_pos[i] = cos((float)angle[i] * 2 * PI / 360.0) * 4;
+    crawling_x_pos[i] = cos((float)angle[i] * 2 * PI / 360.0) * 4;
     y_pos[i] = offset_y;
   }
 }
@@ -55,10 +55,10 @@ void walk(int speed /*vittesse en %*/, int sens /*1 = avancer -1 reculer*/)
   {
     if ((millis() - precedent_movement) >= delay_walk)
     {
-      setLegXY(x_pos[n_walk], y_pos[n_walk], 0);
-      setLegXY(x_pos[(n_walk + QUARTER_NB_ANGLE + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE) % NB_ANGLE], 1);
-      setLegXY(x_pos[(n_walk + QUARTER_NB_ANGLE*2 + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE*2) % NB_ANGLE], 2);
-      setLegXY(x_pos[(n_walk + QUARTER_NB_ANGLE*3 + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE*3) % NB_ANGLE], 3);
+      setLegXY(crawling_x_pos[n_walk], y_pos[n_walk], 0);
+      setLegXY(crawling_x_pos[(n_walk + QUARTER_NB_ANGLE + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE) % NB_ANGLE], 1);
+      setLegXY(crawling_x_pos[(n_walk + QUARTER_NB_ANGLE*2 + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE*2) % NB_ANGLE], 2);
+      setLegXY(crawling_x_pos[(n_walk + QUARTER_NB_ANGLE*3 + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE*3) % NB_ANGLE], 3);
       if (sens == 1)
       {
         n_walk = (n_walk + 1) % NB_ANGLE;

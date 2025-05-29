@@ -32,7 +32,9 @@ void get_command(){
     radioNRF.read(&receivedData, sizeof(receivedData));
     radioNRFData = receivedData;
     int index_of_comma = radioNRFData.indexOf(',');
+    int index_of_second_comma = radioNRFData.substring(index_of_comma + 1).indexOf(',');
     command = radioNRFData.substring(0, index_of_comma).toInt();
-    speed = radioNRFData.substring(index_of_comma + 1).toInt();
+    controller_x = radioNRFData.substring(index_of_comma + 1).toInt();
+    controller_y = radioNRFData.substring(index_of_second_comma + 1).toInt();
   }
 }

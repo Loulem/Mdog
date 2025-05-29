@@ -8,16 +8,16 @@ Adafruit_PWMServoDriver servo_uc2 = Adafruit_PWMServoDriver(0x41); // driver de 
 
 
 
-const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1551, 1466, 1546, 1550, 1500, 1437, 1500, 1589, 1530, 1450, 1480, 1452}; // correspond à la commande en micro seconde pour mettre le servo à 0°
+const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1500, 1500, 1490, 1430, 1460, 1590, 1440, 1560, 1550, 1500, 1490, 1533}; // correspond à la commande en micro seconde pour mettre le servo à 0°
 const int servo_max_ms[16] = {2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500}; // valeur max en micro seconde accepté par le servo moteur
 const int servo_min_ms[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500}; // valeur min en micro seconde accepté par le servo moteur
 const int servo_min_angle[16] = {-90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90}; // angle max des servos
 const int servo_max_angle[16] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90}; // angle min des servos
-const int shoulderToFootZ[4] = {3.315, 3.315, 3.315, 3.315}; // correspondant à la distance suivant Z séparant l’épaule du pied
+const int shoulderToFootZ[4] = {5.375, 5.375, 5.375, 5.375}; // correspondant à la distance suivant Z séparant l’épaule du pied
 
 
 double thighLength[4] = {11, 11, 11, 11};
-double shinLength[4] = {14, 14, 14, 14};
+double shinLength[4] = {14.3, 14.3, 14.3, 14.3};
 byte sens_servo[4] = {0, 1, 0, 1}; // 0 sens trigo => ex 500ms = -90 et 2500ms = 90
 
 #define SERVO_X_DIST 15.7
@@ -105,7 +105,7 @@ void setLegXYAll(double x, double y)
   }
 }
 
-void write_x_y_z(double x, double y, double z, int leg_i)
+void setLegXYZ(double x, double y, double z, int leg_i)
 {
   /*Serial.print(x);
   Serial.print(" ");
@@ -155,7 +155,7 @@ void setLegXYZAll(double x, double y, double z)
 {
   for (int i = 0; i < 4; i++)
   {
-    write_x_y_z(x, y, z, i);
+    setLegXYZ(x, y, z, i);
   }
 }
 
@@ -173,7 +173,7 @@ void leg_go_to_x_y_z_with_rotation(double x, double y, double z, double teta, do
   double x3 = x * (cteta * cpsy - spsy * steta * sphi) + y * (cpsy * steta + spsy * sphi * cteta) - z * spsy * cphi - leg_x_distance[leg_i];
   double y3 = -x * (steta * cphi) + y * cphi * cteta + z * sphi;
   double z3 = x * (cteta * spsy + cpsy * steta * sphi) + y * (spsy * steta - cpsy * sphi * cteta) + z * cpsy * cphi - leg_z_distance[leg_i];
-  write_x_y_z(x3, -y3, z3, leg_i);
+  setLegXYZ(x3, -y3, z3, leg_i);
 }
 
 void all_leg_go_to_x_y_z_with_rotation(double x, double y, double z, double teta, double phi, double psy)
