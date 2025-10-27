@@ -84,6 +84,12 @@ void setup()
 
 void loop()
 {
+  // Read controller command as a struct (angle, power)
+  ControllerCommand cmd = get_command();
+  if (cmd.ok) {
+    controller_x = cmd.angle;
+    controller_y = cmd.power;
+  }
   // Demo/test sequence; replace by controller_main_loop when ready
   test_sequence();
   /*Serial.print(command);

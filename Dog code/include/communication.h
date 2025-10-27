@@ -1,7 +1,14 @@
+// RF communication utilities: parse incoming controller frames
+#ifndef COMMUNICATION_H
+#define COMMUNICATION_H
+
+#include <Arduino.h>
 #include <nRF24L01.h>
 #include <RF24.h>
 #include <Wire.h>                    //https://www.arduino.cc/en/reference/wire
 #include <printf.h>
+
+
 
 String address_1 = "00001";
 RF24 radioNRF(7, 8);
@@ -9,6 +16,13 @@ int total = 0;
 String radioNRFData;
 char receivedData[32];
 void nrf24_init(uint8_t channel);
+
+// Struct to return parsed command values to callers
+struct ControllerCommand {
+  float angle; // degrees
+  float power; // transmitter-defined units
+  bool ok;     // true if a valid frame was parsed
+};
 
 
 void nrf24_init(uint8_t channel)
@@ -24,22 +38,30 @@ void nrf24_init(uint8_t channel)
   radioNRF.openReadingPipe(1, (uint8_t *)address_1.c_str());
 }
 
-
-void get_command(){
+// Return the latest controller command as a struct. If no payload is ready or parsing fails, ok=false.
+ControllerCommand get_command() {
+  ControllerCommand out{0.0f, 0.0f, false};
   radioNRF.startListening();
-  if (radioNRF.available())
-  {
-    radioNRF.read(&receivedData, sizeof(receivedData));
-    radioNRFData = receivedData;
-    int index_of_comma = radioNRFData.indexOf(',');
-    int index_of_second_comma = radioNRFData.substring(index_of_comma + 1).indexOf(',');
-    command = radioNRFData.substring(0, index_of_comma).toInt();
-    String second = radioNRFData.substring(index_of_comma+1);
-    Serial.println(second);
-    index_of_second_comma = second.indexOf(',');
-    controller_x = second.substring(0,index_of_second_comma).toFloat();
-    Serial.println(controller_x);
-    controller_y = second.substring(index_of_second_comma+1).toFloat();
-  }
+  if (radioNRF.available()) {
+    uint8_t len = radioNRF.getDynamicPayloadSize();
+    if (len == 0) return out;
+    if (len > sizeof(receivedData) - 1) len = sizeof(receivedData) - 1;
+    radioNRF.read(&receivedData, len);
+    receivedData[len] = '\0';
 
+    String s = String(receivedData);
+    s.trim();
+    int l = s.indexOf('(');
+    int r = s.indexOf(')', l + 1);
+    String inner = (l != -1 && r != -1 && r > l) ? s.substring(l + 1, r) : s;
+    int comma = inner.indexOf(',');
+    if (comma != -1) {
+      out.angle = inner.substring(0, comma).toFloat();
+      out.power = inner.substring(comma + 1).toFloat();
+      out.ok = true;
+    }
+  }
+  return out;
 }
+
+#endif // COMMUNICATION_H
