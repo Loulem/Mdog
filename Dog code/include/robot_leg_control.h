@@ -1,3 +1,7 @@
+#ifndef ROBOT_LEG_CONTROL_H
+#define ROBOT_LEG_CONTROL_H
+#include <Arduino.h>
+#include <math.h>
 #include <Adafruit_PWMServoDriver.h> //https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
 
 
@@ -13,7 +17,7 @@ const int servo_max_ms[16] = {2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 25
 const int servo_min_ms[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500}; // valeur min en micro seconde accepté par le servo moteur
 const int servo_min_angle[16] = {-90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90}; // angle max des servos
 const int servo_max_angle[16] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90}; // angle min des servos
-const int shoulderToFootZ[4] = {5.375, 5.375, 5.375, 5.375}; // correspondant à la distance suivant Z séparant l’épaule du pied
+const double shoulderToFootZ[4] = {5.375, 5.375, 5.375, 5.375}; // correspondant à la distance suivant Z séparant l’épaule du pied (double supports fractional mm)
 
 
 double thighLength[4] = {11, 11, 11, 11};
@@ -41,13 +45,12 @@ void set_servo_angle(double angle, int servo_i)
 
 double calculate_shoulder_angle(double h, int leg_i)
 {
-
-  return acos((pow(h, 2) + pow(thighLength[leg_i], 2) - pow(shinLength[leg_i], 2)) / (2 * h * thighLength[leg_i])) * 180 / 3.14;
+  return acos((pow(h, 2) + pow(thighLength[leg_i], 2) - pow(shinLength[leg_i], 2)) / (2 * h * thighLength[leg_i])) * 180.0 / PI;
 }
 
 double calculate_knee_angle(double h, int leg_i)
 {
-  return acos((pow(thighLength[leg_i], 2) + pow(shinLength[leg_i], 2) - pow(h, 2)) / (2 * shinLength[leg_i] * thighLength[leg_i])) * 180 / 3.14;
+  return acos((pow(thighLength[leg_i], 2) + pow(shinLength[leg_i], 2) - pow(h, 2)) / (2 * shinLength[leg_i] * thighLength[leg_i])) * 180.0 / PI;
 }
 
 void write_h(double h, int leg_i)
@@ -79,9 +82,9 @@ void setLegXY(double x, double y, int leg_i)
 {
 
   double h = sqrt(pow(y, 2) + pow(x, 2));
-  // double h = y/(cos(add_shoulder_angle*3.14159/180));
+  // double h = y/(cos(add_shoulder_angle*PI/180));
 
-  double add_shoulder_angle = atan((double)x / y) * 180 / 3.14159265358979;
+  double add_shoulder_angle = atan2((double)x, (double)y) * 180.0 / PI;
   double shoulder_angle = calculate_shoulder_angle(h, leg_i);
   double knee_angle = calculate_knee_angle(h, leg_i);
 
@@ -121,8 +124,8 @@ void setLegXYZ(double x, double y, double z, int leg_i)
   {
     double hyp = sqrt(pow(y, 2) + pow(z +  shoulderToFootZ[leg_i], 2));
     y1 = sqrt(pow(hyp, 2) - pow( shoulderToFootZ[leg_i], 2));
-    double teta = atan((z +  shoulderToFootZ[leg_i]) / y) * 180 / 3.14;
-    double psi = acos( shoulderToFootZ[leg_i] / hyp) * 180 / 3.14;
+  double teta = atan2((z + shoulderToFootZ[leg_i]), y) * 180.0 / PI;
+  double psi = acos(shoulderToFootZ[leg_i] / hyp) * 180.0 / PI;
     phi = -90 + teta + psi;
     /*Serial.print(hyp);
     Serial.print(" ");
@@ -135,8 +138,8 @@ void setLegXYZ(double x, double y, double z, int leg_i)
   {
     double hyp = sqrt(pow(y, 2) + pow(z -  shoulderToFootZ[leg_i], 2));
     y1 = sqrt(pow(hyp, 2) - pow( shoulderToFootZ[leg_i], 2));
-    double teta = atan((z -  shoulderToFootZ[leg_i]) / y) * 180 / 3.14;
-    double psi = acos( shoulderToFootZ[leg_i] / hyp) * 180 / 3.14;
+  double teta = atan2((z - shoulderToFootZ[leg_i]), y) * 180.0 / PI;
+  double psi = acos(shoulderToFootZ[leg_i] / hyp) * 180.0 / PI;
     phi = 90 + teta - psi;
   }
 
@@ -183,3 +186,5 @@ void all_leg_go_to_x_y_z_with_rotation(double x, double y, double z, double teta
   leg_go_to_x_y_z_with_rotation(-x, y, -z, teta, phi, psy, 2);
   leg_go_to_x_y_z_with_rotation(-x, y, z, teta, phi, psy, 3);
 }
+
+#endif

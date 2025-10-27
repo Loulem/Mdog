@@ -8,12 +8,14 @@
 */
 
 // Libraries
+#include <Arduino.h>
+#include <math.h>
 
+// Global controller state
 int command;
 float controller_x;
 float controller_y;
 
-#include <math.h>
 #include "robot_leg_control.h"
 #include "crawling.h"
 #include "communication.h"

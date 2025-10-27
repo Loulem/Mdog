@@ -1,3 +1,5 @@
+#pragma once
+#include <Arduino.h>
 #define NB_ANGLE 100
 
 // int angle[40]{354, 348, 342, 336, 330, 324, 318, 312, 306, 300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240, 234, 228, 222, 216, 210, 204, 198, 192, 186, 180, 162, 144, 126, 108, 90, 72, 54, 36, 18, 0};
@@ -9,7 +11,7 @@ byte n_walk = 0;
 long unsigned int delay_walk = 1;
 long unsigned int precedent_movement = 0;
 bool isWalkingEnabled = 1;
-#define QUARTER_NB_ANGLE NB_ANGLE/4
+#define QUARTER_NB_ANGLE (NB_ANGLE/4)
 
 int angle[NB_ANGLE];
 
