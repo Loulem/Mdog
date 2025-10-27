@@ -20,9 +20,9 @@ const int servo_max_angle[16] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90,
 const double shoulderToFootZ[4] = {5.375, 5.375, 5.375, 5.375}; // correspondant à la distance suivant Z séparant l’épaule du pied (double supports fractional mm)
 
 
-double thighLength[4] = {11, 11, 11, 11};
-double shinLength[4] = {14.3, 14.3, 14.3, 14.3};
-byte sens_servo[4] = {0, 1, 0, 1}; // 0 sens trigo => ex 500ms = -90 et 2500ms = 90
+const double thighLength[4] = {11, 11, 11, 11};
+const double shinLength[4] = {14.3, 14.3, 14.3, 14.3};
+const byte sens_servo[4] = {0, 1, 0, 1}; // 0 sens trigo => ex 500ms = -90 et 2500ms = 90
 
 #define SERVO_X_DIST 15.7
 #define SERVO_Z_DIST 8
@@ -31,26 +31,37 @@ double leg_z_distance[4] = {-SERVO_Z_DIST, SERVO_Z_DIST, -SERVO_Z_DIST, SERVO_Z_
 
 
 
-int angle_to_ms(double angle, int servo_i)
-{ // Convertit un angle en durée d'impulsion en microsecondes pour le servo
+// small helper to clamp values
+template <typename T>
+static inline T clamp_val(T v, T lo, T hi) { return (v < lo) ? lo : ((v > hi) ? hi : v); }
 
-  return ((double)(servo_max_ms[servo_i] - servo_min_ms[servo_i]) / ( servo_max_angle[servo_i] - servo_min_angle[servo_i]) * angle);
+int angle_to_ms(double angle, int servo_i)
+{ // Convertit un angle en durée d'impulsion (offset) en microsecondes pour le servo
+  double scale = (double)(servo_max_ms[servo_i] - servo_min_ms[servo_i]) / (servo_max_angle[servo_i] - servo_min_angle[servo_i]);
+  return (int)round(scale * angle);
 }
 
 void set_servo_angle(double angle, int servo_i)
 { // commande au servo de se mettre à l’angle demandé dans le sens trigo et 0° correspond au milieu
-  servo_uc1.writeMicroseconds(servo_i, angle_to_ms(angle, servo_i) + servoNeutralPos[servo_i]);
-  servo_uc2.writeMicroseconds(servo_i, angle_to_ms(angle, servo_i) + servoNeutralPos[servo_i]);
+  // 1) clamp input angle to declared min/max
+  double a = clamp_val(angle, (double)servo_min_angle[servo_i], (double)servo_max_angle[servo_i]);
+  // 2) compute microseconds and clamp to servo min/max pulses
+  double scale = (double)(servo_max_ms[servo_i] - servo_min_ms[servo_i]) / (servo_max_angle[servo_i] - servo_min_angle[servo_i]);
+  int us = (int)round(scale * a) + servoNeutralPos[servo_i];
+  us = clamp_val(us, servo_min_ms[servo_i], servo_max_ms[servo_i]);
+  // 3) write to both drivers (hardware topology mirrors channels on both boards)
+  servo_uc1.writeMicroseconds(servo_i, us);
+  servo_uc2.writeMicroseconds(servo_i, us);
 }
 
 double calculate_shoulder_angle(double h, int leg_i)
 {
-  return acos((pow(h, 2) + pow(thighLength[leg_i], 2) - pow(shinLength[leg_i], 2)) / (2 * h * thighLength[leg_i])) * 180.0 / PI;
+  return acos((pow(h, 2) + pow(thighLength[leg_i], 2) - pow(shinLength[leg_i], 2)) / (2 * h * thighLength[leg_i])) * RAD_TO_DEG;
 }
 
 double calculate_knee_angle(double h, int leg_i)
 {
-  return acos((pow(thighLength[leg_i], 2) + pow(shinLength[leg_i], 2) - pow(h, 2)) / (2 * shinLength[leg_i] * thighLength[leg_i])) * 180.0 / PI;
+  return acos((pow(thighLength[leg_i], 2) + pow(shinLength[leg_i], 2) - pow(h, 2)) / (2 * shinLength[leg_i] * thighLength[leg_i])) * RAD_TO_DEG;
 }
 
 void write_h(double h, int leg_i)
@@ -82,9 +93,9 @@ void setLegXY(double x, double y, int leg_i)
 {
 
   double h = sqrt(pow(y, 2) + pow(x, 2));
-  // double h = y/(cos(add_shoulder_angle*PI/180));
+  // double h = y/(cos(add_shoulder_angle*DEG_TO_RAD));
 
-  double add_shoulder_angle = atan2((double)x, (double)y) * 180.0 / PI;
+  double add_shoulder_angle = atan2((double)x, (double)y) * RAD_TO_DEG;
   double shoulder_angle = calculate_shoulder_angle(h, leg_i);
   double knee_angle = calculate_knee_angle(h, leg_i);
 
@@ -124,8 +135,8 @@ void setLegXYZ(double x, double y, double z, int leg_i)
   {
     double hyp = sqrt(pow(y, 2) + pow(z +  shoulderToFootZ[leg_i], 2));
     y1 = sqrt(pow(hyp, 2) - pow( shoulderToFootZ[leg_i], 2));
-  double teta = atan2((z + shoulderToFootZ[leg_i]), y) * 180.0 / PI;
-  double psi = acos(shoulderToFootZ[leg_i] / hyp) * 180.0 / PI;
+  double teta = atan2((z + shoulderToFootZ[leg_i]), y) * RAD_TO_DEG;
+  double psi = acos(shoulderToFootZ[leg_i] / hyp) * RAD_TO_DEG;
     phi = -90 + teta + psi;
     /*Serial.print(hyp);
     Serial.print(" ");
@@ -138,8 +149,8 @@ void setLegXYZ(double x, double y, double z, int leg_i)
   {
     double hyp = sqrt(pow(y, 2) + pow(z -  shoulderToFootZ[leg_i], 2));
     y1 = sqrt(pow(hyp, 2) - pow( shoulderToFootZ[leg_i], 2));
-  double teta = atan2((z - shoulderToFootZ[leg_i]), y) * 180.0 / PI;
-  double psi = acos(shoulderToFootZ[leg_i] / hyp) * 180.0 / PI;
+  double teta = atan2((z - shoulderToFootZ[leg_i]), y) * RAD_TO_DEG;
+  double psi = acos(shoulderToFootZ[leg_i] / hyp) * RAD_TO_DEG;
     phi = 90 + teta - psi;
   }
 
