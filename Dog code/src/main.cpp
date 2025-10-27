@@ -1,12 +1,11 @@
-/*A faire :
-- changer atan par atan2 et tester
-- rajouter la marche arrière
-- rajouter la rotation du robot
-- ajouter les différents mode de fonctionnement
-- la réception RF
-
+/* Roadmap / A faire:
+ - Add reverse walking
+ - Add body rotation mode
+ - Add multiple operating modes
+ - RF reception
 */
 
+// Application entry point: setup() and loop()
 // Libraries
 #include <Arduino.h>
 #include <math.h>
@@ -41,23 +40,24 @@ void setup()
   delay(5000);
   
   
+  // Initialize both servo drivers
   servo_uc1.begin();
-  servo_uc1.setOscillatorFrequency(26250000); // a determiner à l’oscillocope pour chaque driver (vérifier qu’on obtient 2000 microsecond pour un writemicrosecond de 2000)
-  servo_uc1.setPWMFreq(300); // Analog servos run at ~50 Hz updates
+  servo_uc1.setOscillatorFrequency(26250000); // tune per board with oscilloscope
+  servo_uc1.setPWMFreq(300); // PCA9685 PWM frequency (tuned for your hardware)
 
   servo_uc2.begin();
   servo_uc2.setOscillatorFrequency(25360000);
-  servo_uc2.setPWMFreq(300);         // Analog servos run at ~50 Hz updates
+  servo_uc2.setPWMFreq(300);         // Keep same frequency on both boards
   
   for (int i = 4; i < 16; i++)
   {
-    
+    // Move all driven channels to their mechanical neutral
     servo_uc1.writeMicroseconds(i, servoNeutralPos[i]);
     servo_uc2.writeMicroseconds(i, servoNeutralPos[i]);
   }
 
   Serial.begin(250000);
-  nrf24_init(115);
+  nrf24_init(115); // Initialize RF link (channel/id as used by your setup)
 
   
   test_setup();
@@ -84,6 +84,7 @@ void setup()
 
 void loop()
 {
+  // Demo/test sequence; replace by controller_main_loop when ready
   test_sequence();
   /*Serial.print(command);
   Serial.print(" ");

@@ -1,20 +1,24 @@
+// Walking gait generation utilities
+// - Generates a simple 4-phase crawling trajectory over NB_ANGLE samples
+// - X follows a cosine; Y stays at offset except during swing (last quarter)
 #pragma once
 #include <Arduino.h>
 #define NB_ANGLE 100
 
 // int angle[40]{354, 348, 342, 336, 330, 324, 318, 312, 306, 300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240, 234, 228, 222, 216, 210, 204, 198, 192, 186, 180, 162, 144, 126, 108, 90, 72, 54, 36, 18, 0};
-double crawling_x_pos[NB_ANGLE];
-double y_pos[NB_ANGLE];
-float offset_y = 26;
-float WALK_RADIUS = 6;
-byte n_walk = 0;
-long unsigned int delay_walk = 1;
-long unsigned int precedent_movement = 0;
-bool isWalkingEnabled = 1;
+double crawling_x_pos[NB_ANGLE]; // X trajectory samples for one full cycle
+double y_pos[NB_ANGLE];           // Y trajectory samples for one full cycle
+float offset_y = 26;  // Neutral Y offset (stance height)
+float WALK_RADIUS = 6; // Swing arc amplitude on Y during the last quarter
+byte n_walk = 0;                        // Current index in the trajectory
+long unsigned int delay_walk = 1;       // Minimum time between steps (ms)
+long unsigned int precedent_movement = 0; // Last time we advanced n_walk
+bool isWalkingEnabled = 1;              // Master enable
 #define QUARTER_NB_ANGLE (NB_ANGLE/4)
 
-int angle[NB_ANGLE];
+int angle[NB_ANGLE]; // Degrees for each sample (monotonic 360..0 across the cycle)
 
+// Fill 'angle' array with a smooth 360->180 (3 quarters) then 180->0 (last quarter)
 void setup_angle()
 {
   int quart = NB_ANGLE / 4;
@@ -34,6 +38,7 @@ void setup_angle()
   }
 }
 
+// Build X/Y trajectories for a full cycle
 void setup_walk_path()
 {
   setup_angle();
@@ -50,6 +55,9 @@ void setup_walk_path()
   }
 }
 
+// Advance walking trajectory if enabled
+// speed: percent (unused here but kept for API compatibility)
+// sens: 1 forward, -1 backward
 void walk(int speed /*vittesse en %*/, int sens /*1 = avancer -1 reculer*/)
 {
   
@@ -74,6 +82,7 @@ void walk(int speed /*vittesse en %*/, int sens /*1 = avancer -1 reculer*/)
     }
   }
 }
+// Overload: defaults to forward
 void walk(int speed)
 {
   walk(speed, 1);
