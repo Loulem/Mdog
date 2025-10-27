@@ -34,7 +34,12 @@ void get_command(){
     int index_of_comma = radioNRFData.indexOf(',');
     int index_of_second_comma = radioNRFData.substring(index_of_comma + 1).indexOf(',');
     command = radioNRFData.substring(0, index_of_comma).toInt();
-    controller_x = radioNRFData.substring(index_of_comma + 1).toInt();
-    controller_y = radioNRFData.substring(index_of_second_comma + 1).toInt();
+    String second = radioNRFData.substring(index_of_comma+1);
+    Serial.println(second);
+    index_of_second_comma = second.indexOf(',');
+    controller_x = second.substring(0,index_of_second_comma).toFloat();
+    Serial.println(controller_x);
+    controller_y = second.substring(index_of_second_comma+1).toFloat();
   }
+
 }

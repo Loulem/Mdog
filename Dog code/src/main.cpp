@@ -10,14 +10,15 @@
 // Libraries
 
 int command;
-int controller_x;
-int controller_y;
+float controller_x;
+float controller_y;
 
 #include <math.h>
 #include "robot_leg_control.h"
 #include "crawling.h"
 #include "communication.h"
 
+void controller_main_loop();
 
 
 
@@ -69,7 +70,7 @@ void setup()
     Serial.print(" ");
     Serial.print(leg0_y_pos[i]);
     Serial.print(" ");
-    Serial.print(leg0_z_pos[i]);
+    Serial.print(leg_z_pos[i]);
     Serial.println();
 
     delay(10);
@@ -82,8 +83,13 @@ void setup()
 void loop()
 {
   test_sequence();
-
-  
+  /*Serial.print(command);
+  Serial.print(" ");
+  Serial.print(controller_x);
+  Serial.print(" ");
+  Serial.println(controller_y);
+*/
+  //controller_main_loop();
   /*unsigned long t1 = micros();
   get_command();
   walk( speed,command);
@@ -96,15 +102,3 @@ void loop()
 }
 
 
-
-void controller_main_loop()
-{
-    get_command();
-    if (command == 1){
-      setLegXYAll(controller_x, controller_y);
-    }
-    else if (command == 2){
-      all_leg_go_to_x_y_z_with_rotation(SERVO_X_DIST, -13, SERVO_Z_DIST, controller_x * PI / 180.0, 0, 0);
-    }
-    
-  }

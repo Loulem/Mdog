@@ -1,16 +1,18 @@
-#define NB_ANGLE 160
-#define NB_LEFT_TO_RIGHT 80
+#define NB_ANGLE 100
+#define NB_LEFT_TO_RIGHT 40
 #define QUARTER_NB_ANGLE NB_ANGLE / 4
 #define Z_LEFT -4.0
 #define Z_RIGHT 4.0
 
 // int angle[40]{354, 348, 342, 336, 330, 324, 318, 312, 306, 300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240, 234, 228, 222, 216, 210, 204, 198, 192, 186, 180, 162, 144, 126, 108, 90, 72, 54, 36, 18, 0};
-double crawling_x_pos[NB_ANGLE]; // liste des coordonnées x des pates
-double y_pos[NB_ANGLE];
-double z_pos[NB_ANGLE];
-float offset_y = 23;
-float walk_radius = 6;
-byte n_walk = 0;
+float crawling_x_pos[NB_ANGLE]; // liste des coordonnées x des pates
+float y_pos[NB_ANGLE];
+float z_pos[NB_ANGLE];
+float offset_y = 21;
+#define X_OFFSET -4 // offset pour la position x des pattes
+#define OFFSET_Z 0 // offset pour la position z des pattes
+#define WALK_RADIUS 6
+int n_walk = 0;
 long unsigned int delay_walk = 1;
 long unsigned int precedent_movement = 0;
 bool isWalkingEnabled = 1;
@@ -26,7 +28,7 @@ float leg1_y_pos[NB_ANGLE + NB_LEFT_TO_RIGHT];
 float leg2_y_pos[NB_ANGLE + NB_LEFT_TO_RIGHT];
 float leg3_y_pos[NB_ANGLE + NB_LEFT_TO_RIGHT];
 
-float leg0_z_pos[NB_ANGLE + NB_LEFT_TO_RIGHT];
+float leg_z_pos[NB_ANGLE + NB_LEFT_TO_RIGHT];
 
 void setup_angle()
 {
@@ -56,7 +58,7 @@ void setup_walk_path()
   for (int i = 0; i < quart; i++)
   {
     crawling_x_pos[i] = cos((float)angle[i] * 2 * PI / 360.0) * 4;
-    y_pos[i] = offset_y - sin((float)angle[i] * 2 * PI / 360.0) * walk_radius;
+    y_pos[i] = offset_y - sin((float)angle[i] * 2 * PI / 360.0) * WALK_RADIUS;
   }
 
   // on remplit les tableaux des positions des pates au sol pour les trois quarts restant des positions
@@ -82,18 +84,22 @@ void setup_walk_path_with_right_left()
   setup_walk_path();
   for (int i = 0; i < NB_ANGLE / 2; i++)
   {
-    leg0_x_pos[i] = crawling_x_pos[i];
-    leg0_y_pos[i] = y_pos[i];
-    leg0_z_pos[i] = z_pos[i];
+    // first leg to go up
+    leg2_x_pos[i] = crawling_x_pos[i];
+    leg2_y_pos[i] = y_pos[i];
+    leg_z_pos[i] = z_pos[i];
 
-    leg3_x_pos[i] = crawling_x_pos[(i + QUARTER_NB_ANGLE) % NB_ANGLE];
-    leg3_y_pos[i] = y_pos[(i + QUARTER_NB_ANGLE) % NB_ANGLE];
+    // second leg to go up
+    leg0_x_pos[i] = crawling_x_pos[(i + QUARTER_NB_ANGLE * 3) % NB_ANGLE];
+    leg0_y_pos[i] = y_pos[(i + QUARTER_NB_ANGLE * 3) % NB_ANGLE];
 
-    leg1_x_pos[i] = crawling_x_pos[(i + QUARTER_NB_ANGLE * 2) % NB_ANGLE];
-    leg1_y_pos[i] = y_pos[(i + QUARTER_NB_ANGLE * 2) % NB_ANGLE];
+    // third leg to go up
+    leg3_x_pos[i] = crawling_x_pos[(i + QUARTER_NB_ANGLE * 2) % NB_ANGLE];
+    leg3_y_pos[i] = y_pos[(i + QUARTER_NB_ANGLE * 2) % NB_ANGLE];
 
-    leg2_x_pos[i] = crawling_x_pos[(i + QUARTER_NB_ANGLE * 3) % NB_ANGLE];
-    leg2_y_pos[i] = y_pos[(i + QUARTER_NB_ANGLE * 3) % NB_ANGLE];
+    // fourth leg to go up
+    leg1_x_pos[i] = crawling_x_pos[(i + QUARTER_NB_ANGLE) % NB_ANGLE];
+    leg1_y_pos[i] = y_pos[(i + QUARTER_NB_ANGLE) % NB_ANGLE];
 
   }
   float increment_z = (Z_RIGHT - Z_LEFT) / (float)(NB_LEFT_TO_RIGHT / 2.0);
@@ -101,7 +107,7 @@ void setup_walk_path_with_right_left()
   {
     leg0_x_pos[i] = leg0_x_pos[i - 1];
     leg0_y_pos[i] = leg0_y_pos[i - 1];
-    leg0_z_pos[i] = leg0_z_pos[i - 1] + increment_z;
+    leg_z_pos[i] = leg_z_pos[i - 1] + increment_z;
 
     leg1_x_pos[i] = leg1_x_pos[i - 1];
     leg1_y_pos[i] = leg1_y_pos[i - 1];
@@ -118,7 +124,7 @@ void setup_walk_path_with_right_left()
     
     leg0_x_pos[i] = crawling_x_pos[i - NB_LEFT_TO_RIGHT/2];
     leg0_y_pos[i] = y_pos[i - NB_LEFT_TO_RIGHT/2];
-    leg0_z_pos[i] = z_pos[i - NB_LEFT_TO_RIGHT/2];
+    leg_z_pos[i] = z_pos[i - NB_LEFT_TO_RIGHT/2];
 
     leg3_x_pos[i] = crawling_x_pos[(i - NB_LEFT_TO_RIGHT/2 + QUARTER_NB_ANGLE) % NB_ANGLE];
     leg3_y_pos[i] = y_pos[(i - NB_LEFT_TO_RIGHT/2 + QUARTER_NB_ANGLE) % NB_ANGLE];
@@ -134,7 +140,7 @@ void setup_walk_path_with_right_left()
   {
     leg0_x_pos[i] = leg0_x_pos[i - 1];
     leg0_y_pos[i] = leg0_y_pos[i - 1];
-    leg0_z_pos[i] = leg0_z_pos[i - 1] - increment_z;
+    leg_z_pos[i] = leg_z_pos[i - 1] - increment_z;
 
     leg1_x_pos[i] = leg1_x_pos[i - 1];
     leg1_y_pos[i] = leg1_y_pos[i - 1];
@@ -157,11 +163,11 @@ void walk(int speed /*vittesse en %*/, int sens /*1 = avancer -1 reculer*/)
     {
       Serial.print(leg0_x_pos[n_walk]);
       Serial.print(leg0_y_pos[n_walk]);
-      Serial.println(leg0_z_pos[n_walk]);
-      setLegXYZ(leg0_x_pos[n_walk], leg0_y_pos[n_walk], leg0_z_pos[n_walk], 0);
-      setLegXYZ(leg1_x_pos[n_walk], leg1_y_pos[n_walk], leg0_z_pos[n_walk], 1);
-      setLegXYZ(leg2_x_pos[n_walk], leg2_y_pos[n_walk], leg0_z_pos[n_walk], 2);
-      setLegXYZ(leg3_x_pos[n_walk], leg3_y_pos[n_walk], leg0_z_pos[n_walk], 3);
+      Serial.println(leg_z_pos[n_walk]);
+      setLegXYZ(leg0_x_pos[n_walk]+X_OFFSET, leg0_y_pos[n_walk], leg_z_pos[n_walk]-OFFSET_Z, 0);
+      setLegXYZ(leg1_x_pos[n_walk]+X_OFFSET, leg1_y_pos[n_walk], leg_z_pos[n_walk]+OFFSET_Z, 1);
+      setLegXYZ(leg2_x_pos[n_walk]+X_OFFSET, leg2_y_pos[n_walk], leg_z_pos[n_walk]-OFFSET_Z, 2);
+      setLegXYZ(leg3_x_pos[n_walk]+X_OFFSET, leg3_y_pos[n_walk], leg_z_pos[n_walk]+OFFSET_Z, 3);
       //setLegXYZ(crawling_x_pos[n_walk], y_pos[n_walk], z_pos[n_walk], 0);
       //setLegXYZ(crawling_x_pos[(n_walk + QUARTER_NB_ANGLE + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE) % NB_ANGLE], z_pos[n_walk], 3);
       //setLegXYZ(crawling_x_pos[(n_walk + QUARTER_NB_ANGLE * 2 + NB_ANGLE) % NB_ANGLE], y_pos[(n_walk + QUARTER_NB_ANGLE * 2) % NB_ANGLE], z_pos[n_walk], 1);

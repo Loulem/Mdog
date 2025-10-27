@@ -4,7 +4,7 @@
 double crawling_x_pos[NB_ANGLE];
 double y_pos[NB_ANGLE];
 float offset_y = 26;
-float walk_radius = 6;
+float WALK_RADIUS = 6;
 byte n_walk = 0;
 long unsigned int delay_walk = 1;
 long unsigned int precedent_movement = 0;
@@ -39,7 +39,7 @@ void setup_walk_path()
   for (int i = 3 * quart; i < NB_ANGLE; i++)
   {
     crawling_x_pos[i] = cos((float)angle[i] * 2 * PI / 360.0) * 4;
-    y_pos[i] = offset_y - sin((float)angle[i] * 2 * PI / 360.0) * walk_radius;
+    y_pos[i] = offset_y - sin((float)angle[i] * 2 * PI / 360.0) * WALK_RADIUS;
   }
   for (int i = 0; i < 3 * quart; i++)
   {
