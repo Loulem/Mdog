@@ -10,10 +10,8 @@
 #include <Arduino.h>
 #include <math.h>
 
-// Global controller state
-int command;
+// Global controller state (angle for future use)
 float controller_x;
-float controller_y;
 
 #include "robot_leg_control.h"
 #include "crawling.h"
@@ -86,26 +84,20 @@ void loop()
 {
   // Read controller command as a struct (angle, power)
   ControllerCommand cmd = get_command();
+
+  int speed = 0;
+  int sens = 1; // 1 forward, -1 backward
   if (cmd.ok) {
     controller_x = cmd.angle;
-    controller_y = cmd.power;
+    // Use power magnitude as speed, sign as direction
+    sens = (cmd.power < 0) ? -1 : 1;
+    speed = (int)fabs(cmd.power);
   }
   // Demo/test sequence; replace by controller_main_loop when ready
   test_sequence();
-  /*Serial.print(command);
-  Serial.print(" ");
-  Serial.print(controller_x);
-  Serial.print(" ");
-  Serial.println(controller_y);
-*/
-  //controller_main_loop();
-  /*unsigned long t1 = micros();
-  get_command();
-  walk( speed,command);
-  unsigned long t2 = micros();
-  unsigned long t = t2 - t1;
-  Serial.println(t);
-  */
+
+  walk(speed, sens);
+
 
   
 }
