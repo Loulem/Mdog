@@ -10,7 +10,7 @@ LegJoints LegKinematics::calculateJointAngles(LegId leg, const LegPosition& posi
     LegJoints joints;
     
     // Calculate hip angle from y and z
-    joints.hip = calculateHipAngle(leg, position.y, position.z);
+    joints.hipAngle = calculateHipAngle(leg, position.y, position.z);
     
     // Calculate y1 (projected Y after hip rotation)
     float y1;
@@ -33,9 +33,9 @@ LegJoints LegKinematics::calculateJointAngles(LegId leg, const LegPosition& posi
     
     // Apply orientation-specific adjustments
     if (servo_orientation_[leg]) {  // right side legs
-        joints.shoulder = -base_shoulder_angle + add_shoulder_angle;
+        joints.shoulderAngle = -base_shoulder_angle + add_shoulder_angle;
     } else {  // left side legs
-        joints.shoulder = base_shoulder_angle - add_shoulder_angle;
+        joints.shoulderAngle = base_shoulder_angle - add_shoulder_angle;
     }
     
     // Calculate knee angle
@@ -43,9 +43,9 @@ LegJoints LegKinematics::calculateJointAngles(LegId leg, const LegPosition& posi
     
     // Apply orientation-specific knee adjustment
     if (servo_orientation_[leg]) {  // right side
-        joints.knee = 90 - knee_angle;
+        joints.kneeAngle = 90 - knee_angle;
     } else {  // left side
-        joints.knee = -(90 - knee_angle);
+        joints.kneeAngle = -(90 - knee_angle);
     }
     
     return joints;
