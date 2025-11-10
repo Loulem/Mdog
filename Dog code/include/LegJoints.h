@@ -2,9 +2,9 @@
 #define LEG_JOINTS_H
 
 struct LegJoints {
-    float hip;
-    float shoulder;
-    float knee;
+    float hipAngle;
+    float shoulderAngle;
+    float kneeAngle;
 };
 
 #endif // LEG_JOINTS_H
