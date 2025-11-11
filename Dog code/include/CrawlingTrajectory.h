@@ -1,12 +1,12 @@
-#ifndef GAIT_TRAJECTORY_H
-#define GAIT_TRAJECTORY_H
+#ifndef CRAWLING_TRAJECTORY_H
+#define CRAWLING_TRAJECTORY_H
 
 #include <Arduino.h>
 #include "LegState.h"
 
-class GaitTrajectory {
+class CrawlingTrajectory {
 public:
-    GaitTrajectory();
+    CrawlingTrajectory();
     
     void generateTrajectory();
     bool advanceStep(int direction, uint32_t current_ms);
@@ -35,4 +35,4 @@ private:
     void generateLateralShift();
 };
 
-#endif // GAIT_TRAJECTORY_H
+#endif // CRAWLING_TRAJECTORY_H

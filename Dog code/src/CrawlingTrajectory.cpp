@@ -1,14 +1,14 @@
-#include "GaitTrajectory.h"
+#include "CrawlingTrajectory.h"
 
-GaitTrajectory::GaitTrajectory()
+CrawlingTrajectory::CrawlingTrajectory()
     : current_step_index_(0), last_step_time_ms_(0), step_interval_ms_(1) {}
 
-void GaitTrajectory::generateTrajectory() {
+void CrawlingTrajectory::generateTrajectory() {
     generateWalkPath();
     generateLateralShift();
 }
 
-bool GaitTrajectory::advanceStep(int direction, uint32_t current_ms) {
+bool CrawlingTrajectory::advanceStep(int direction, uint32_t current_ms) {
     if (current_ms - last_step_time_ms_ < step_interval_ms_) {
         return false;
     }
@@ -23,18 +23,18 @@ bool GaitTrajectory::advanceStep(int direction, uint32_t current_ms) {
     return true;
 }
 
-LegPosition GaitTrajectory::getLegPosition(uint8_t leg_index) const {
+LegPosition CrawlingTrajectory::getLegPosition(uint8_t leg_index) const {
     if (leg_index >= 4) {
         return LegPosition{0.0f, 0.0f, 0.0f};
     }
     return trajectory_[current_step_index_][leg_index];
 }
 
-void GaitTrajectory::setStepInterval(uint16_t interval_ms) {
+void CrawlingTrajectory::setStepInterval(uint16_t interval_ms) {
     step_interval_ms_ = interval_ms;
 }
 
-void GaitTrajectory::generateWalkPath() {
+void CrawlingTrajectory::generateWalkPath() {
     // Generate angle array (first quarter: 180->0, rest: 360->180)
     // Angles start from 180 and go to 180 in clockwise direction (anti-trigo)
     float angles[NB_STEPS];
@@ -98,7 +98,7 @@ void GaitTrajectory::generateWalkPath() {
     }
 }
 
-void GaitTrajectory::generateLateralShift() {
+void CrawlingTrajectory::generateLateralShift() {
     // First half: shift from left to right
     float increment_z = (Z_RIGHT - Z_LEFT) / (float)(NB_LATERAL_STEPS / 2);
     
