@@ -3,11 +3,11 @@
 #include "DogMaster.h"
 #define DEBUG_PRINT_ENABLE
 
-DogMaster dog;
+DogMaster dog(115);
 
 
 
-void setup() {float controller_x;
+void setup() {
 
   Serial.begin(250000);
 
@@ -17,7 +17,10 @@ void setup() {float controller_x;
 
   Serial.println("Dog starting...");
 
-  dog.begin(115); // RF channel 115
+  if (!dog.begin()) {
+      Serial.println("Dog failed to start!");
+      return;
+  }
 
   Serial.println("Dog ready!");
 
@@ -26,8 +29,7 @@ void setup() {float controller_x;
 
 
 void loop() {
-
-  
-
+  dog.update();
+  delay(1000);
 }
 
