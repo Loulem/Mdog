@@ -1,7 +1,6 @@
-#include <Arduino.h>// Libraries
+#include <Arduino.h>
 
 #include "DogMaster.h"
-#define DEBUG_PRINT_ENABLE
 
 DogMaster dog(115);
 
