@@ -5,11 +5,13 @@ DogMaster::DogMaster(uint8_t _rf_channel)
 
 bool DogMaster::begin() {
     // Setup RF controller
-    bool success = rfController.begin(rf_channel);
-    if(!success){
-        return false;
+    if (!IGNORE_RF) {
+        bool success = rfController.begin(rf_channel);
+        if(!success){
+            return false;
+        }
     }
-    
+
     // Setup servo bus with two drivers in mirror mode
     servoBus.addDriver(0x40, 26250000);
     servoBus.addDriver(0x41, 25360000);
@@ -61,12 +63,18 @@ void DogMaster::updateLegPositions() {
     for (uint8_t i = 0; i < 4; i++) {
         current_positions[i] = gaitPath.getLegPosition(i);
     }
+    #ifdef DEBUG_PRINT_ENABLE
+    current_positions.print();
+    #endif
 }
 
 void DogMaster::computeJointAngles() {
     for (uint8_t i = 0; i < 4; i++) {
         current_joints[i] = kinematics.calculateJointAngles((LegId)i, current_positions[i]);
     }
+    #ifdef DEBUG_PRINT_ENABLE
+    current_joints.print();
+    #endif
 }
 
 void DogMaster::applyJointAngles() {
