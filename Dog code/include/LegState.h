@@ -42,6 +42,15 @@ struct AllLegsPosition {
             default: return front_left;
         }
     }
+    #ifdef DEBUG_PRINT_ENABLE
+    void print() const {
+        Serial.println("Leg Positions:");
+        Serial.print("Front Left: ("); Serial.print(front_left.x); Serial.print(", "); Serial.print(front_left.y); Serial.print(", "); Serial.print(front_left.z); Serial.println(")");
+        Serial.print("Front Right: ("); Serial.print(front_right.x); Serial.print(", "); Serial.print(front_right.y); Serial.print(", "); Serial.print(front_right.z); Serial.println(")");
+        Serial.print("Back Left: ("); Serial.print(back_left.x); Serial.print(", "); Serial.print(back_left.y); Serial.print(", "); Serial.print(back_left.z); Serial.println(")");
+        Serial.print("Back Right: ("); Serial.print(back_right.x); Serial.print(", "); Serial.print(back_right.y); Serial.print(", "); Serial.print(back_right.z); Serial.println(")");
+    }
+    #endif
 };
 
 // État complet des 4 pattes en angles
@@ -71,6 +80,15 @@ struct AllLegsJoints {
             default: return front_left;
         }
     }
+    #ifdef DEBUG_PRINT_ENABLE
+    void print() const {
+        Serial.println("Leg Joints:");
+        Serial.print("Front Left: ("); Serial.print(front_left.hipAngle); Serial.print(", "); Serial.print(front_left.shoulderAngle); Serial.print(", "); Serial.print(front_left.kneeAngle); Serial.println(")");
+        Serial.print("Front Right: ("); Serial.print(front_right.hipAngle); Serial.print(", "); Serial.print(front_right.shoulderAngle); Serial.print(", "); Serial.print(front_right.kneeAngle); Serial.println(")");
+        Serial.print("Back Left: ("); Serial.print(back_left.hipAngle); Serial.print(", "); Serial.print(back_left.shoulderAngle); Serial.print(", "); Serial.print(back_left.kneeAngle); Serial.println(")");
+        Serial.print("Back Right: ("); Serial.print(back_right.hipAngle); Serial.print(", "); Serial.print(back_right.shoulderAngle); Serial.print(", "); Serial.print(back_right.kneeAngle); Serial.println(")");
+    }
+    #endif
 };
 
 #endif // LEG_STATE_H
