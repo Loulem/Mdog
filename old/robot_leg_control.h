@@ -1,53 +1,86 @@
+// Robot leg control: kinematics and servo mapping
+// - Angles are in degrees unless explicitly noted
+// - Distances/lengths use a consistent unit across the file (match your build)
+// - Servo pulses are in microseconds
+// - Leg indices 0..3 are used consistently across arrays
+#ifndef ROBOT_LEG_CONTROL_H
+#define ROBOT_LEG_CONTROL_H
+#include <Arduino.h>
+#include <math.h>
 #include <Adafruit_PWMServoDriver.h> //https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
 
 
 
 
+// Two PCA9685 servo drivers (I2C addresses 0x40 and 0x41)
 Adafruit_PWMServoDriver servo_uc1 = Adafruit_PWMServoDriver(0x40); // driver de servo moteur avec l’adresse 0x40
 Adafruit_PWMServoDriver servo_uc2 = Adafruit_PWMServoDriver(0x41); // driver de servo moteur avec l’adresse 0x40
 
 
 
-const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1551, 1466, 1546, 1550, 1500, 1437, 1500, 1589, 1530, 1450, 1480, 1452}; // correspond à la commande en micro seconde pour mettre le servo à 0°
+// Microseconds for each channel at mechanical 0° (neutral)
+const int servoNeutralPos[16] = {1500, 1500, 1500, 1500, 1500, 1500, 1490, 1430, 1460, 1590, 1440, 1560, 1550, 1500, 1490, 1533}; // correspond à la commande en micro seconde pour mettre le servo à 0°
 const int servo_max_ms[16] = {2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500}; // valeur max en micro seconde accepté par le servo moteur
+// Min/max microseconds allowed by your servos (protects hardware)
 const int servo_min_ms[16] = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500}; // valeur min en micro seconde accepté par le servo moteur
+// Mechanical angle limits for each channel
 const int servo_min_angle[16] = {-90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90, -90}; // angle max des servos
 const int servo_max_angle[16] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90}; // angle min des servos
-const int shoulderToFootZ[4] = {3.315, 3.315, 3.315, 3.315}; // correspondant à la distance suivant Z séparant l’épaule du pied
+// Horizontal offset between shoulder joint and foot attachment point for each leg
+const double shoulderToFootZ[4] = {5.375, 5.375, 5.375, 5.375}; // correspondant à la distance suivant Z séparant l’épaule du pied (double supports fractional mm)
 
 
-double thighLength[4] = {11, 11, 11, 11};
-double shinLength[4] = {14, 14, 14, 14};
-byte sens_servo[4] = {0, 1, 0, 1}; // 0 sens trigo => ex 500ms = -90 et 2500ms = 90
+// Link lengths and servo orientation for each leg
+const double thighLength[4] = {11, 11, 11, 11};
+const double shinLength[4] = {14.3, 14.3, 14.3, 14.3};
+const byte sens_servo[4] = {0, 1, 0, 1}; // 0 sens trigo => ex 500ms = -90 et 2500ms = 90
 
 #define SERVO_X_DIST 15.7
 #define SERVO_Z_DIST 8
+// Leg anchor offsets (how far each leg is from the body center)
 double leg_x_distance[4] = {SERVO_X_DIST, SERVO_X_DIST, -SERVO_X_DIST, -SERVO_X_DIST};
 double leg_z_distance[4] = {-SERVO_Z_DIST, SERVO_Z_DIST, -SERVO_Z_DIST, SERVO_Z_DIST};
 
 
 
-int angle_to_ms(double angle, int servo_i)
-{ // Convertit un angle en durée d'impulsion en microsecondes pour le servo
+// small helper to clamp values
+// Clamp helper (inclusive) to protect against invalid ranges
+template <typename T>
+static inline T clamp_val(T v, T lo, T hi) { return (v < lo) ? lo : ((v > hi) ? hi : v); }
 
-  return ((double)(servo_max_ms[servo_i] - servo_min_ms[servo_i]) / ( servo_max_angle[servo_i] - servo_min_angle[servo_i]) * angle);
+// Convert an angle offset (deg) to microseconds offset for a given channel.
+// Note: neutral offset is not added here (caller adds servoNeutralPos).
+int angle_to_ms(double angle, int servo_i)
+{ // Convertit un angle en durée d'impulsion (offset) en microsecondes pour le servo
+  double scale = (double)(servo_max_ms[servo_i] - servo_min_ms[servo_i]) / (servo_max_angle[servo_i] - servo_min_angle[servo_i]);
+  return (int)round(scale * angle);
 }
 
+// Set the target angle (deg) for a given servo channel.
+// Safety: clamps both input angle and resulting microseconds to configured limits.
 void set_servo_angle(double angle, int servo_i)
 { // commande au servo de se mettre à l’angle demandé dans le sens trigo et 0° correspond au milieu
-  servo_uc1.writeMicroseconds(servo_i, angle_to_ms(angle, servo_i) + servoNeutralPos[servo_i]);
-  servo_uc2.writeMicroseconds(servo_i, angle_to_ms(angle, servo_i) + servoNeutralPos[servo_i]);
+  // 1) clamp input angle to declared min/max
+  double a = clamp_val(angle, (double)servo_min_angle[servo_i], (double)servo_max_angle[servo_i]);
+  // 2) compute microseconds and clamp to servo min/max pulses
+  double scale = (double)(servo_max_ms[servo_i] - servo_min_ms[servo_i]) / (servo_max_angle[servo_i] - servo_min_angle[servo_i]);
+  int us = (int)round(scale * a) + servoNeutralPos[servo_i];
+  us = clamp_val(us, servo_min_ms[servo_i], servo_max_ms[servo_i]);
+  // 3) write to both drivers (hardware topology mirrors channels on both boards)
+  servo_uc1.writeMicroseconds(servo_i, us);
+  servo_uc2.writeMicroseconds(servo_i, us);
 }
 
+// From triangle geometry (law of cosines), compute shoulder angle given link length h
 double calculate_shoulder_angle(double h, int leg_i)
 {
-
-  return acos((pow(h, 2) + pow(thighLength[leg_i], 2) - pow(shinLength[leg_i], 2)) / (2 * h * thighLength[leg_i])) * 180 / 3.14;
+  return acos((pow(h, 2) + pow(thighLength[leg_i], 2) - pow(shinLength[leg_i], 2)) / (2 * h * thighLength[leg_i])) * RAD_TO_DEG;
 }
 
+// From triangle geometry (law of cosines), compute knee angle for a given leg
 double calculate_knee_angle(double h, int leg_i)
 {
-  return acos((pow(thighLength[leg_i], 2) + pow(shinLength[leg_i], 2) - pow(h, 2)) / (2 * shinLength[leg_i] * thighLength[leg_i])) * 180 / 3.14;
+  return acos((pow(thighLength[leg_i], 2) + pow(shinLength[leg_i], 2) - pow(h, 2)) / (2 * shinLength[leg_i] * thighLength[leg_i])) * RAD_TO_DEG;
 }
 
 void write_h(double h, int leg_i)
@@ -67,6 +100,7 @@ void write_h(double h, int leg_i)
   }
 }
 
+// Set the same effective link length h for all legs
 void setLegHeightAll(double h)
 {
   for (int i = 0; i < 4; i++)
@@ -75,13 +109,15 @@ void setLegHeightAll(double h)
   }
 }
 
+// Place leg i at planar coordinates (x, y) relative to its shoulder frame
+// Internally computes h and adjusts shoulder/knee angles
 void setLegXY(double x, double y, int leg_i)
 {
 
   double h = sqrt(pow(y, 2) + pow(x, 2));
-  // double h = y/(cos(add_shoulder_angle*3.14159/180));
+  // double h = y/(cos(add_shoulder_angle*DEG_TO_RAD));
 
-  double add_shoulder_angle = atan((double)x / y) * 180 / 3.14159265358979;
+  double add_shoulder_angle = atan2((double)x, (double)y) * RAD_TO_DEG;
   double shoulder_angle = calculate_shoulder_angle(h, leg_i);
   double knee_angle = calculate_knee_angle(h, leg_i);
 
@@ -97,6 +133,7 @@ void setLegXY(double x, double y, int leg_i)
   }
 }
 
+// Convenience: place all legs at the same planar (x, y)
 void setLegXYAll(double x, double y)
 {
   for (int i = 0; i < 4; i++)
@@ -105,7 +142,8 @@ void setLegXYAll(double x, double y)
   }
 }
 
-void write_x_y_z(double x, double y, double z, int leg_i)
+// Place leg i at (x, y, z) in the leg frame; computes hip roll (phi) from y/z offset
+void setLegXYZ(double x, double y, double z, int leg_i)
 {
   /*Serial.print(x);
   Serial.print(" ");
@@ -121,8 +159,8 @@ void write_x_y_z(double x, double y, double z, int leg_i)
   {
     double hyp = sqrt(pow(y, 2) + pow(z +  shoulderToFootZ[leg_i], 2));
     y1 = sqrt(pow(hyp, 2) - pow( shoulderToFootZ[leg_i], 2));
-    double teta = atan((z +  shoulderToFootZ[leg_i]) / y) * 180 / 3.14;
-    double psi = acos( shoulderToFootZ[leg_i] / hyp) * 180 / 3.14;
+  double teta = atan2((z + shoulderToFootZ[leg_i]), y) * RAD_TO_DEG;
+  double psi = acos(shoulderToFootZ[leg_i] / hyp) * RAD_TO_DEG;
     phi = -90 + teta + psi;
     /*Serial.print(hyp);
     Serial.print(" ");
@@ -135,8 +173,8 @@ void write_x_y_z(double x, double y, double z, int leg_i)
   {
     double hyp = sqrt(pow(y, 2) + pow(z -  shoulderToFootZ[leg_i], 2));
     y1 = sqrt(pow(hyp, 2) - pow( shoulderToFootZ[leg_i], 2));
-    double teta = atan((z -  shoulderToFootZ[leg_i]) / y) * 180 / 3.14;
-    double psi = acos( shoulderToFootZ[leg_i] / hyp) * 180 / 3.14;
+  double teta = atan2((z - shoulderToFootZ[leg_i]), y) * RAD_TO_DEG;
+  double psi = acos(shoulderToFootZ[leg_i] / hyp) * RAD_TO_DEG;
     phi = 90 + teta - psi;
   }
 
@@ -155,11 +193,13 @@ void setLegXYZAll(double x, double y, double z)
 {
   for (int i = 0; i < 4; i++)
   {
-    write_x_y_z(x, y, z, i);
+    setLegXYZ(x, y, z, i);
   }
 }
 
 
+// Transform world coordinates (x,y,z) by body rotations (teta around Z, phi around X, psy around Y)
+// then send the corresponding (x3,y3,z3) to the target leg.
 void leg_go_to_x_y_z_with_rotation(double x, double y, double z, double teta, double phi, double psy, int leg_i)
 { // x,y,z sont les coordonnées associés au repaire du sol centré au centre du chien, l’angle teta est la rotation autour de z, phi est la rotation autour de x1 et psi autour de y2
   // on calcule le vecteur (x,y,z) dans la base R2
@@ -173,9 +213,10 @@ void leg_go_to_x_y_z_with_rotation(double x, double y, double z, double teta, do
   double x3 = x * (cteta * cpsy - spsy * steta * sphi) + y * (cpsy * steta + spsy * sphi * cteta) - z * spsy * cphi - leg_x_distance[leg_i];
   double y3 = -x * (steta * cphi) + y * cphi * cteta + z * sphi;
   double z3 = x * (cteta * spsy + cpsy * steta * sphi) + y * (spsy * steta - cpsy * sphi * cteta) + z * cpsy * cphi - leg_z_distance[leg_i];
-  write_x_y_z(x3, -y3, z3, leg_i);
+  setLegXYZ(x3, -y3, z3, leg_i);
 }
 
+// Apply the same world (x,y,z,teta,phi,psy) to all legs with per-leg offsets
 void all_leg_go_to_x_y_z_with_rotation(double x, double y, double z, double teta, double phi, double psy)
 {
   leg_go_to_x_y_z_with_rotation(x, y, -z, teta, phi, psy, 0);
@@ -183,3 +224,5 @@ void all_leg_go_to_x_y_z_with_rotation(double x, double y, double z, double teta
   leg_go_to_x_y_z_with_rotation(-x, y, -z, teta, phi, psy, 2);
   leg_go_to_x_y_z_with_rotation(-x, y, z, teta, phi, psy, 3);
 }
+
+#endif
