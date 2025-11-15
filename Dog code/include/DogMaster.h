@@ -29,6 +29,7 @@ private:
     void computeJointAngles();
     void applyJointAngles();
     static constexpr bool IGNORE_RF = true;
+    
 };
 
 #endif // DOG_MASTER_H

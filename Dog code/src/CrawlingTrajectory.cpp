@@ -75,7 +75,7 @@ void CrawlingTrajectory::generateWalkPath() {
     
     // Distribute positions to each leg with phase shifts
     // Leg order: 2 -> 0 -> 3 -> 1 (diagonal gait)
-    for (uint8_t i = 0; i < NB_STEPS / 2; i++) {
+    for (uint8_t i = 0; i < NB_STEPS/2; i++) {
         uint8_t idx0 = (i + 3 * QUARTER_STEPS) % NB_STEPS;
         uint8_t idx1 = (i + QUARTER_STEPS) % NB_STEPS;
         uint8_t idx2 = i;
@@ -96,24 +96,42 @@ void CrawlingTrajectory::generateWalkPath() {
         trajectory_[i][2].z = base_z[i];
         trajectory_[i][3].z = base_z[i];
     }
+    for (uint8_t i = NB_STEPS/2 + NB_LATERAL_STEPS/2; i < TOTAL_STEPS - NB_LATERAL_STEPS/2; i++) {
+        uint8_t base_idx = i - NB_LATERAL_STEPS/2;
+        uint8_t idx0 = (base_idx + 3 * QUARTER_STEPS) % NB_STEPS;
+        uint8_t idx1 = (base_idx + QUARTER_STEPS) % NB_STEPS;
+        uint8_t idx2 = base_idx;
+        uint8_t idx3 = (base_idx + 2 * QUARTER_STEPS) % NB_STEPS;
+        
+        trajectory_[i][0].x = base_x[idx0] + X_OFFSET;
+        trajectory_[i][1].x = base_x[idx1] + X_OFFSET;
+        trajectory_[i][2].x = base_x[idx2] + X_OFFSET;
+        trajectory_[i][3].x = base_x[idx3] + X_OFFSET;
+        
+        trajectory_[i][0].y = base_y[idx0];
+        trajectory_[i][1].y = base_y[idx1];
+        trajectory_[i][2].y = base_y[idx2];
+        trajectory_[i][3].y = base_y[idx3];
+        
+        trajectory_[i][0].z = base_z[base_idx];
+        trajectory_[i][1].z = base_z[base_idx];
+        trajectory_[i][2].z = base_z[base_idx];
+        trajectory_[i][3].z = base_z[base_idx];
+    }
 }
 
 void CrawlingTrajectory::generateLateralShift() {
-    // First half: shift from left to right
     float increment_z = (Z_RIGHT - Z_LEFT) / (float)(NB_LATERAL_STEPS / 2);
-    
-    // Transition 1: Z goes from left to right (steps 50-69)
+    // First lateral shift: Z goes from left to right (steps 50-69)
+    // Transition 1: Z LEFT -> RIGHT
     for (uint8_t i = NB_STEPS / 2; i < NB_STEPS / 2 + NB_LATERAL_STEPS / 2; i++) {
-        trajectory_[i][0].x = trajectory_[i - 1][0].x;
-        trajectory_[i][1].x = trajectory_[i - 1][1].x;
-        trajectory_[i][2].x = trajectory_[i - 1][2].x;
-        trajectory_[i][3].x = trajectory_[i - 1][3].x;
+        // Copy X and Y from previous step
+        trajectory_[i][0] = trajectory_[i - 1][0];
+        trajectory_[i][1] = trajectory_[i - 1][1];
+        trajectory_[i][2] = trajectory_[i - 1][2];
+        trajectory_[i][3] = trajectory_[i - 1][3];
         
-        trajectory_[i][0].y = trajectory_[i - 1][0].y;
-        trajectory_[i][1].y = trajectory_[i - 1][1].y;
-        trajectory_[i][2].y = trajectory_[i - 1][2].y;
-        trajectory_[i][3].y = trajectory_[i - 1][3].y;
-        
+        // Increment Z for lateral shift
         float new_z = trajectory_[i - 1][0].z + increment_z;
         trajectory_[i][0].z = new_z;
         trajectory_[i][1].z = new_z;
@@ -121,43 +139,16 @@ void CrawlingTrajectory::generateLateralShift() {
         trajectory_[i][3].z = new_z;
     }
     
-    // Continue walking (steps 70-119)
-    for (uint8_t i = NB_STEPS / 2 + NB_LATERAL_STEPS / 2; i < NB_STEPS + NB_LATERAL_STEPS / 2; i++) {
-        uint8_t base_idx = i - NB_LATERAL_STEPS / 2;
-        uint8_t idx0 = (base_idx + 3 * QUARTER_STEPS) % NB_STEPS;
-        uint8_t idx1 = (base_idx + QUARTER_STEPS) % NB_STEPS;
-        uint8_t idx2 = base_idx;
-        uint8_t idx3 = (base_idx + 2 * QUARTER_STEPS) % NB_STEPS;
+    // Second lateral shift: Z goes from right to left (steps 120-139)
+    // Transition 2: Z RIGHT -> LEFT
+    for (uint8_t i = TOTAL_STEPS - NB_LATERAL_STEPS / 2; i < TOTAL_STEPS; i++) {
+        // Copy X and Y from previous step
+        trajectory_[i][0] = trajectory_[i - 1][0];
+        trajectory_[i][1] = trajectory_[i - 1][1];
+        trajectory_[i][2] = trajectory_[i - 1][2];
+        trajectory_[i][3] = trajectory_[i - 1][3];
         
-        trajectory_[i][0].x = trajectory_[idx0][0].x;
-        trajectory_[i][1].x = trajectory_[idx1][1].x;
-        trajectory_[i][2].x = trajectory_[idx2][2].x;
-        trajectory_[i][3].x = trajectory_[idx3][3].x;
-        
-        trajectory_[i][0].y = trajectory_[idx0][0].y;
-        trajectory_[i][1].y = trajectory_[idx1][1].y;
-        trajectory_[i][2].y = trajectory_[idx2][2].y;
-        trajectory_[i][3].y = trajectory_[idx3][3].y;
-        
-        float z_val = (base_idx < NB_STEPS / 2) ? Z_LEFT : Z_RIGHT;
-        trajectory_[i][0].z = z_val;
-        trajectory_[i][1].z = z_val;
-        trajectory_[i][2].z = z_val;
-        trajectory_[i][3].z = z_val;
-    }
-    
-    // Transition 2: Z goes from right to left (steps 120-139)
-    for (uint8_t i = NB_STEPS + NB_LATERAL_STEPS / 2; i < TOTAL_STEPS; i++) {
-        trajectory_[i][0].x = trajectory_[i - 1][0].x;
-        trajectory_[i][1].x = trajectory_[i - 1][1].x;
-        trajectory_[i][2].x = trajectory_[i - 1][2].x;
-        trajectory_[i][3].x = trajectory_[i - 1][3].x;
-        
-        trajectory_[i][0].y = trajectory_[i - 1][0].y;
-        trajectory_[i][1].y = trajectory_[i - 1][1].y;
-        trajectory_[i][2].y = trajectory_[i - 1][2].y;
-        trajectory_[i][3].y = trajectory_[i - 1][3].y;
-        
+        // Decrement Z for lateral shift
         float new_z = trajectory_[i - 1][0].z - increment_z;
         trajectory_[i][0].z = new_z;
         trajectory_[i][1].z = new_z;
