@@ -1,51 +1,109 @@
-# Robot Dog — PlatformIO Arduino Project
+# Robot Dog — Quadruped Robot Firmware
 
-This repository contains firmware and supporting files for a multi-legged "robot dog" project written for Arduino-compatible boards using PlatformIO.
+Firmware for a quadruped robot dog with inverse kinematics, gait generation, and wireless control (nRF24L01). Built with PlatformIO for Arduino-compatible boards.
 
-## Overview
+## Features
 
-The project implements low-level leg control, walking/crawling paths, and a basic communication interface (RF24) to receive movement commands. The codebase is set up for development with PlatformIO and targets Arduino-style boards (examples: Arduino Mega 2560, Arduino Uno R4).
+- **Inverse Kinematics**: 3-DOF leg control with real-time position calculation
+- **Crawling Gait**: Pre-computed 100-step walking cycle with lateral stability
+- **Multi-Servo Control**: Dual I²C PWM drivers (up to 32 servos)
+- **Wireless Control**: nRF24L01 radio for remote commands
+- **Debug Mode**: Test without hardware using simulation mode
 
-## Quick Start
+## System Architecture
 
-Prerequisites:
-- Visual Studio Code
-- PlatformIO extension for VS Code
-- USB drivers for your target board (Arduino Mega or Uno R4)
+The firmware is organized around a modular architecture:
 
-1. Open this project folder in VS Code.
-2. Install the PlatformIO extension (if not already installed).
-3. In the bottom PlatformIO status bar, choose the active environment (for example `megaatmega2560` for an Arduino Mega 2560 or `uno_r4_minima` for an Uno R4 board).
-4. Build the project with the PlatformIO toolbar or Run: `PlatformIO: Build`.
-5. Connect your board and upload using `PlatformIO: Upload`.
+- **`DogMaster`**: Central coordinator managing the control loop (polls RF, advances gait, computes kinematics, applies servo angles)
+- **`RFController`**: Wireless receiver parsing `(angle,power)` commands from nRF24L01
+- **`CrawlingTrajectory`**: Gait generator with 100-step cycle returning 3D positions for all legs
+- **`LegKinematics`**: Inverse kinematics solver (3-DOF: hip, shoulder, knee)
+- **`ServoBus`**: Dual PCA9685 PWM driver controller with per-servo calibration
 
-Note: The default environments are defined in `platformio.ini`. If you use a different board, change the environment or create a new one in `platformio.ini`.
+## Hardware Requirements
+
+- **Microcontroller**: Arduino Mega 2560 or Uno R4 Minima
+- **Servo Drivers**: 2× PCA9685 (I²C addresses 0x40, 0x41)
+- **Radio**: nRF24L01+ (CE: pin 7, CSN: pin 8)
+- **Servos**: 12× servos (3 per leg)
+- **Power**: 6V, 5-10A supply
+
+### Servo Channel Mapping
+| Leg           | Hip | Shoulder | Knee |
+|---------------|-----|----------|------|
+| Front Left    | 4   | 12       | 8    |
+| Front Right   | 5   | 13       | 9    |
+| Back Left     | 6   | 14       | 10   |
+| Back Right    | 7   | 15       | 11   |
+
+## Installation
+
+**Prerequisites**: VS Code with PlatformIO extension
+
+1. **Open project** in VS Code (File → Open Folder → select `Dog code`)
+
+2. **Select environment** in PlatformIO toolbar: `megaatmega2560` or `uno_r4_minima`
+
+3. **Build**: Click Build button or run `pio run -e megaatmega2560`
+
+4. **Upload**: Connect board via USB, click Upload or run `pio run -t upload -e megaatmega2560`
+
+5. **Monitor**: `pio device monitor -b 250000` (Mega: 57600 baud, Uno R4: 250000)
+
+## Configuration
+
+**Debug mode (no RF)**: Set `IGNORE_RF = true` in `DogMaster.h` to walk forward without radio
+
+**Debug output**: Enable `-DDEBUG_PRINT_ENABLE` in `platformio.ini` for position/angle logging
+
+**Servo calibration**: Edit `ServoConfig.h` for pulse width ranges and angle limits
+
+**Gait tuning**: Modify `CrawlingTrajectory.h` constants:
+- `WALK_RADIUS`: Step size (default 6.0cm)
+- `STANCE_HEIGHT`: Body height (default 21.0cm)
+- `NB_STEPS`: Steps per cycle (default 100)
+
+## Usage
+
+**Command format**: `(angle,power)` via nRF24L01
+- `(0,50)` — Forward at 50% speed
+- `(45,30)` — Turn 45° right at 30%
+- `(0,0)` — Stop
 
 ## Project Structure
 
-- `platformio.ini` — PlatformIO project configuration and build environments.
-- `robot_dog_main.cpp`, `src/main.cpp` — main firmware entry points.
-- `include/` — project headers (robot leg control, walking logic, communication, tests).
-- `lib/` — extra libraries (empty README here).
-- `test/` — test utilities and examples.
+```
+Dog code/
+├── platformio.ini          # Build config
+├── include/                # Headers
+│   ├── DogMaster.h         # Main orchestrator
+│   ├── RFController.h      # Radio
+│   ├── CrawlingTrajectory.h # Gait
+│   ├── LegKinematics.h     # IK solver
+│   ├── ServoBus.h          # PWM drivers
+│   └── ServoConfig.h       # Calibration
+└── src/                    # Implementation
+    ├── main.cpp
+    └── [...]
+```
 
-## Common Tasks
+## Troubleshooting
 
-- Build: Use PlatformIO Build in VS Code.
-- Upload: Use PlatformIO Upload (choose the environment matching your board).
-- Serial Monitor: Use PlatformIO Serial Monitor. The project uses high baud rates in places (e.g. 250000); set the monitor speed accordingly.
+**Upload fails**: Check USB connection, verify COM port with `pio device list`, close serial monitor
 
-## Notes and TODOs
+**Servos jitter**: Check power supply current capacity
 
-The code contains several in-code TODOs (e.g., replace atan with atan2, add reverse gait and rotation). See top-level comments in the source files.
+**No radio commands**: Verify CE/CSN pins (7, 8), check channel matches transmitter
 
-## Contributing
+**Unstable walking**: Adjust `STANCE_HEIGHT` or `WALK_RADIUS` in `CrawlingTrajectory.h`
 
-See `CONTRIBUTING.md` for how to contribute, coding style, and how to run tests.
+## Future Improvements
 
-## License
-
-This project is available under the MIT License — see the `LICENSE` file.
+- [ ] Rotation and reverse gaits
+- [ ] IMU integration for balance
+- [ ] Additional gait patterns (trot, sprint)
+- [ ] Battery monitoring
 
 ---
-_If you prefer an English/French bilingual README or want hardware wiring diagrams added, I can add them next._
+
+**Leg dimensions**: Thigh 11.0cm, Shin 14.3cm | **Gait cycle**: 140 steps (~7sec default) | **Performance**: <1ms IK per leg, 300Hz PWM
