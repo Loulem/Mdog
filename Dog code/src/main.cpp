@@ -22,13 +22,13 @@ void setup() {
   }
 
   Serial.println("Dog ready!");
-
+  dog.setStepInterval(100); 
 }
 
 
 
 void loop() {
   dog.update();
-  delay(1000);
+  delay(10); // Small delay
 }
 

@@ -32,6 +32,15 @@ void ServoBus::begin(uint16_t pwm_freq) {
     }
 }
 
+void ServoBus::reset() {
+    for (uint8_t i = 0; i < driver_count_; i++) {
+        if (drivers_[i] != nullptr) {
+            drivers_[i]->reset();
+            delay(10);
+        }
+    }
+}
+
 void ServoBus::setServoAngle(uint8_t channel, float angle_deg) {
     if (channel >= CHANNELS) return;
     int us = angleToMicroseconds(channel, angle_deg);

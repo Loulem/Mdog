@@ -11,6 +11,7 @@ public:
     
     void addDriver(uint8_t i2c_address, uint32_t oscillator_freq);
     void begin(uint16_t pwm_freq);
+    void reset();  // Force reset des drivers
     
     void setServoAngle(uint8_t channel, float angle_deg);
     void setAllToNeutral();

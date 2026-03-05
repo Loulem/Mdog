@@ -11,8 +11,9 @@
 
 class DogMaster {
 public:
-    DogMaster(uint8_t _rf_channel = 115);
+    DogMaster(uint8_t _rf_channel=115);
     bool begin();
+    void setStepInterval(uint16_t interval_ms);
     bool update();
 
 private:
