@@ -24,13 +24,14 @@ void setup() {
   }
 
   Serial.println("Dog ready!");
-  dog.setStepInterval(100); 
+  dog.setStepInterval(25); 
 }
+
+
 long int led_timer = 0;
 byte run_led_state = 0;
 void loop() {
   dog.update();
-  //delay(10); // Small delay
   if (millis() - led_timer > 500) {
     run_led_state = !run_led_state;
     digitalWrite(LED_BUILTIN, run_led_state);
