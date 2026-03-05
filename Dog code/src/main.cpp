@@ -10,6 +10,7 @@ DogMaster dog(115);
 void setup() {
 
   Serial.begin(250000);
+  pinMode(LED_BUILTIN, OUTPUT);
   
   delay(5000);
 
