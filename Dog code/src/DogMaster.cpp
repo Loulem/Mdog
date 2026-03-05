@@ -15,9 +15,8 @@ bool DogMaster::begin() {
     // Setup servo bus with two drivers in mirror mode
     servoBus.addDriver(0x40, 26250000);
     servoBus.addDriver(0x41, 25360000);
-    servoBus.reset(); 
-    delay(100);
     servoBus.begin(200);
+    delay(100);
     
     // Generate walking trajectory
     gaitPath.generateTrajectory();
