@@ -97,6 +97,14 @@ Dog code/
 
 **Unstable walking**: Adjust `STANCE_HEIGHT` or `WALK_RADIUS` in `CrawlingTrajectory.h`
 
+## Related Repositories
+
+- **[Mcontroller](https://github.com/Loulem/Mcontroller)** — Universal remote controller firmware for MBOT projects
+  - General-purpose wireless controller for nRF24L01 transmitter
+  - Used to control this dog robot and other MBOT projects
+  - Required for wireless control of this robot
+  - Clone both repositories for the complete system
+
 ## Future Improvements
 
 - [ ] Rotation and reverse gaits
