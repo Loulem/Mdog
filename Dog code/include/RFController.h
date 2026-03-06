@@ -10,7 +10,7 @@
 // No side effects; owns its RF24 instance.
 class RFController {
 public:
-    RFController(uint8_t ce_pin = 7, uint8_t csn_pin = 8);
+    RFController(uint8_t ce_pin = 4, uint8_t csn_pin = 5);
     bool begin(uint8_t channel = 115, const char* address = "00001");
     ControllerCommand retrieveRadioCommand();
 

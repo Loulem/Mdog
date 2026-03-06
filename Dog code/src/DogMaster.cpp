@@ -15,12 +15,17 @@ bool DogMaster::begin() {
     // Setup servo bus with two drivers in mirror mode
     servoBus.addDriver(0x40, 26250000);
     servoBus.addDriver(0x41, 25360000);
-    servoBus.begin(300);
+    servoBus.begin(200);
+    delay(100);
     
     // Generate walking trajectory
     gaitPath.generateTrajectory();
     
     return true;
+}
+
+void DogMaster::setStepInterval(uint16_t interval_ms) {
+    gaitPath.setStepInterval(interval_ms);
 }
 
 bool DogMaster::update() { 
@@ -29,7 +34,14 @@ bool DogMaster::update() {
         // 1. Poll for RF input
         cmd = rfController.retrieveRadioCommand();
         if (!cmd.valid) {
-            return false;
+            if (millis() - lastRFReceiveTime > RF_TIMEOUT_MS) {
+                cmd = {0.0f, 0.0f, true}; // failsafe: stop
+            } else {
+                cmd = lastCommand; // use last received command
+            }
+        } else {
+            lastCommand = cmd;
+            lastRFReceiveTime = millis();
         }
     }
 

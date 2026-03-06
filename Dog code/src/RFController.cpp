@@ -15,9 +15,12 @@ bool RFController::begin(uint8_t _channel, const char* address) {
     rfDevices.setDataRate(RF24_250KBPS);
     rfDevices.enableDynamicPayloads();
     rfDevices.setPALevel(RF24_PA_MIN);
-    rfDevices.printDetails();
     rfDevices.openReadingPipe(1, (const uint8_t*)address);
     rfDevices.startListening();
+    Serial.println("=== NRF24 Details ===");
+    rfDevices.printDetails();
+    Serial.print("isChipConnected: ");
+    Serial.println(rfDevices.isChipConnected());
     return true;
 }
 
@@ -31,18 +34,14 @@ ControllerCommand RFController::retrieveRadioCommand() {
     return extractCommandFromData(data_receive_buffer, len);
 }
 
-ControllerCommand RFController::extractCommandFromData(const char* data, uint8_t len) { // data is supposed to be in this format: "(angle,power)"
+ControllerCommand RFController::extractCommandFromData(const char* data, uint8_t len) { // data is supposed to be in this format: "state,power"
     ControllerCommand cmd{0.0f, 0.0f, false};
     String dataString = String(data);
     dataString.trim(); // remove extra characters
-    int left_parenthesis_index = dataString.indexOf('(');
-    int right_parenthesis_index = dataString.indexOf(')', left_parenthesis_index + 1);
-    if (left_parenthesis_index == -1 || right_parenthesis_index == -1 || right_parenthesis_index <= left_parenthesis_index) return cmd;
-    String dataBetweenParentheses = dataString.substring(left_parenthesis_index + 1, right_parenthesis_index);
-    int comma = dataBetweenParentheses.indexOf(',');
+    int comma = dataString.indexOf(',');
     if (comma == -1) return cmd;
-    cmd.angle = dataBetweenParentheses.substring(0, comma).toFloat();
-    cmd.power = dataBetweenParentheses.substring(comma + 1).toFloat();
+    cmd.angle = dataString.substring(0, comma).toFloat();
+    cmd.power = dataString.substring(comma + 1).toFloat();
     cmd.valid = true;
     return cmd;
 }

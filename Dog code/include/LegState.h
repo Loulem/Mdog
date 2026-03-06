@@ -87,6 +87,7 @@ struct AllLegsJoints {
         Serial.print("Front Right: ("); Serial.print(front_right.hipAngle); Serial.print(", "); Serial.print(front_right.shoulderAngle); Serial.print(", "); Serial.print(front_right.kneeAngle); Serial.println(")");
         Serial.print("Back Left: ("); Serial.print(back_left.hipAngle); Serial.print(", "); Serial.print(back_left.shoulderAngle); Serial.print(", "); Serial.print(back_left.kneeAngle); Serial.println(")");
         Serial.print("Back Right: ("); Serial.print(back_right.hipAngle); Serial.print(", "); Serial.print(back_right.shoulderAngle); Serial.print(", "); Serial.print(back_right.kneeAngle); Serial.println(")");
+        Serial.println(millis());
     }
     #endif
 };

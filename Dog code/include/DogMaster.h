@@ -11,8 +11,9 @@
 
 class DogMaster {
 public:
-    DogMaster(uint8_t _rf_channel = 115);
+    DogMaster(uint8_t _rf_channel=115);
     bool begin();
+    void setStepInterval(uint16_t interval_ms);
     bool update();
 
 private:
@@ -24,11 +25,14 @@ private:
     
     AllLegsPosition current_positions;
     AllLegsJoints current_joints;
+    ControllerCommand lastCommand{0.0f, 0.0f, false};
+    unsigned long lastRFReceiveTime = 0;
+    static constexpr unsigned long RF_TIMEOUT_MS = 1000; // failsafe: stop after 1s without RF
     
     void updateLegPositions();
     void computeJointAngles();
     void applyJointAngles();
-    static constexpr bool IGNORE_RF = true;
+    static constexpr bool IGNORE_RF = false;
     
 };
 
