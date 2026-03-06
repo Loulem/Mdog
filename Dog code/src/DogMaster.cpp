@@ -34,7 +34,14 @@ bool DogMaster::update() {
         // 1. Poll for RF input
         cmd = rfController.retrieveRadioCommand();
         if (!cmd.valid) {
-            return false;
+            if (millis() - lastRFReceiveTime > RF_TIMEOUT_MS) {
+                cmd = {0.0f, 0.0f, true}; // failsafe: stop
+            } else {
+                cmd = lastCommand; // use last received command
+            }
+        } else {
+            lastCommand = cmd;
+            lastRFReceiveTime = millis();
         }
     }
 
